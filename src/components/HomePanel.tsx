@@ -1,5 +1,6 @@
 import { useMusicPlayer } from '../context/MusicPlayerContext';
 import { ChevronRight, Play } from 'lucide-react';
+import PageHeader from './PageHeader';
 
 export default function HomePanel() {
   const {
@@ -103,13 +104,14 @@ export default function HomePanel() {
 
   return (
     <div className="apple-home-container">
-      {/* Top Header with Big Title & User Avatar */}
-      <div className="apple-home-header">
-        <h1 className="apple-home-title">Home</h1>
-        <div className="apple-profile-avatar" title="Account">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Profile" />
-        </div>
-      </div>
+      <PageHeader 
+        title="Home"
+        rightContent={
+          <div className="apple-profile-avatar" title="Account" style={{ margin: 0 }}>
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Profile" />
+          </div>
+        }
+      />
 
       {/* Section 1: Top Picks for You */}
       <div className="apple-section">

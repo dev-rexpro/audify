@@ -129,8 +129,7 @@ async function parseMP4Metadata(file: File, meta: LocalAudioMetadata): Promise<v
           // Detect MIME from first bytes
           let mime = 'image/jpeg';
           if (copy[0] === 0x89 && copy[1] === 0x50) mime = 'image/png';
-          const blob = new Blob([copy.buffer as ArrayBuffer], { type: mime });
-          meta.cover = URL.createObjectURL(blob);
+          meta.cover = bytesToDataUrl(copy, mime);
         }
       }
     }
@@ -242,8 +241,7 @@ function parseFLACPicture(view: DataView, offset: number, _length: number, meta:
     pos += 4;
     const imgBytes = new Uint8Array(view.buffer, view.byteOffset + pos, picDataLen);
     const copy = new Uint8Array(imgBytes);
-    const blob = new Blob([copy.buffer as ArrayBuffer], { type: mime || 'image/jpeg' });
-    meta.cover = URL.createObjectURL(blob);
+    meta.cover = bytesToDataUrl(copy, mime || 'image/jpeg');
   } catch (e) {}
 }
 
@@ -439,9 +437,19 @@ function parseID3Picture(data: DataView, offset: number, length: number, isV22: 
 
     const imgBytes = new Uint8Array(data.buffer, data.byteOffset + pos, imgLen);
     const copy = new Uint8Array(imgBytes);
-    const blob = new Blob([copy.buffer as ArrayBuffer], { type: mimeType });
-    return URL.createObjectURL(blob);
+    return bytesToDataUrl(copy, mimeType);
   } catch {
     return null;
   }
+}
+
+export function bytesToDataUrl(bytes: Uint8Array, mimeType = 'image/jpeg'): string {
+  let binary = '';
+  const len = bytes.byteLength;
+  const chunkSize = 8192;
+  for (let i = 0; i < len; i += chunkSize) {
+    const sub = bytes.subarray(i, Math.min(i + chunkSize, len));
+    binary += String.fromCharCode.apply(null, Array.from(sub));
+  }
+  return `data:${mimeType};base64,${btoa(binary)}`;
 }

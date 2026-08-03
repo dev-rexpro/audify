@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Music } from 'lucide-react';
 import { useMusicPlayer } from './context/MusicPlayerContext';
 import HomePanel from './components/HomePanel';
@@ -6,18 +7,63 @@ import LocalPanel from './components/LocalPanel';
 import PlaylistPanel from './components/PlaylistPanel';
 import MiniPlayer from './components/MiniPlayer';
 import BottomNav from './components/BottomNav';
-import FullPlayer from './components/FullPlayer';
+
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { restoreAppPersistence, saveLastPlayState } from './utils/playerPersistence';
+
 import PlaylistModal from './components/PlaylistModal';
 import ShortcutModal from './components/ShortcutModal';
 import Toast from './components/Toast';
-import { Disc3, Keyboard } from 'lucide-react';
+
+const LazyFullPlayer = React.lazy(() => import('./components/FullPlayer').then(m => ({ default: m.default })));
 
 function App() {
   const { state, audioRef } = useMusicPlayer();
+  useKeyboardShortcuts();
   const currentTab = state.activeTab || 'home';
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    restoreAppPersistence();
+
+    const handleSave = () => saveLastPlayState();
+    window.addEventListener('beforeunload', handleSave);
+    document.addEventListener('visibilitychange', handleSave);
+
+    const timer = setInterval(() => {
+      saveLastPlayState();
+    }, 3000);
+
+    return () => {
+      saveLastPlayState();
+      window.removeEventListener('beforeunload', handleSave);
+      document.removeEventListener('visibilitychange', handleSave);
+      clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   return (
     <div className="app">
+      {isOffline && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+          background: '#ff3b30', color: '#fff', textAlign: 'center',
+          padding: '8px 16px', fontSize: '13px', fontWeight: 600
+        }}>
+          You are offline — only downloaded tracks are available
+        </div>
+      )}
       <main className="layout">
         <section id="view-home" className={`view-section home-panel ${currentTab === 'home' ? 'active' : ''}`}>
           <HomePanel />
@@ -54,7 +100,9 @@ function App() {
         <BottomNav />
       </div>
 
-      <FullPlayer />
+      <React.Suspense fallback={null}>
+        <LazyFullPlayer />
+      </React.Suspense>
       <PlaylistModal />
       <ShortcutModal />
       <Toast />

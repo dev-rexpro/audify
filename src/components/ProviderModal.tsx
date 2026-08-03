@@ -6,6 +6,13 @@ export default function ProviderModal() {
 
   if (!showProviderModal) return null;
 
+  const sources = [
+    { key: 'qq', label: 'QQ Music' },
+    { key: 'joox', label: 'JOOX' },
+    { key: 'netease', label: 'Netease' },
+    { key: 'kuwo', label: 'Kuwo' }
+  ];
+
   return (
     <div id="provider-modal" className="modal-backdrop show" onClick={(e) => { if (e.target === e.currentTarget) closeProviderModal(); }}>
       <div className="modal" style={{ maxWidth: '340px', width: '90%' }}>
@@ -18,46 +25,18 @@ export default function ProviderModal() {
         <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Select active music sources for search.</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 0' }}>
-            <input
-              type="checkbox"
-              data-source="qq"
-              checked={state.enabledSources.qq ?? true}
-              onChange={e => setEnabledSources({ ...state.enabledSources, qq: e.target.checked })}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--accent)', margin: 0, cursor: 'pointer' }}
-            />
-            <span style={{ fontSize: '15px', fontWeight: 500, userSelect: 'none' }}>QQ Music</span>
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 0' }}>
-            <input
-              type="checkbox"
-              data-source="joox"
-              checked={state.enabledSources.joox ?? true}
-              onChange={e => setEnabledSources({ ...state.enabledSources, joox: e.target.checked })}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--accent)', margin: 0, cursor: 'pointer' }}
-            />
-            <span style={{ fontSize: '15px', fontWeight: 500, userSelect: 'none' }}>JOOX</span>
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 0' }}>
-            <input
-              type="checkbox"
-              data-source="netease"
-              checked={state.enabledSources.netease ?? true}
-              onChange={e => setEnabledSources({ ...state.enabledSources, netease: e.target.checked })}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--accent)', margin: 0, cursor: 'pointer' }}
-            />
-            <span style={{ fontSize: '15px', fontWeight: 500, userSelect: 'none' }}>Netease</span>
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 0' }}>
-            <input
-              type="checkbox"
-              data-source="kuwo"
-              checked={state.enabledSources.kuwo ?? true}
-              onChange={e => setEnabledSources({ ...state.enabledSources, kuwo: e.target.checked })}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--accent)', margin: 0, cursor: 'pointer' }}
-            />
-            <span style={{ fontSize: '15px', fontWeight: 500, userSelect: 'none' }}>Kuwo</span>
-          </label>
+          {sources.map(src => (
+            <label key={src.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 0' }}>
+              <input
+                type="checkbox"
+                data-source={src.key}
+                checked={state.enabledSources[src.key] ?? true}
+                onChange={e => setEnabledSources({ ...state.enabledSources, [src.key]: e.target.checked })}
+                style={{ width: '18px', height: '18px', accentColor: 'var(--accent)', margin: 0, cursor: 'pointer' }}
+              />
+              <span style={{ fontSize: '15px', fontWeight: 500, userSelect: 'none' }}>{src.label}</span>
+            </label>
+          ))}
         </div>
 
         <div className="modal-actions">
