@@ -637,6 +637,22 @@ header {
   pointer-events: none;
 }
 
+/* FLOATING UI CONTAINER (APPLE MUSIC FLOATING MINI-PLAYER & SPLIT BOTTOM NAV) */
+.floating-ui-container {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 520px;
+  padding: 12px 16px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
 .floating-ui-container > * {
   pointer-events: auto;
 }
@@ -645,9 +661,9 @@ header {
 .mini-player {
   width: 100%;
   height: 60px;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  backdrop-filter: blur(25px) saturate(180%);
   border-radius: 30px;
   display: flex;
   align-items: center;
@@ -738,9 +754,9 @@ header {
 .bottom-nav-pill {
   flex: 1;
   height: 64px;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  backdrop-filter: blur(25px) saturate(180%);
   border-radius: 32px;
   display: flex;
   align-items: center;
@@ -755,9 +771,9 @@ header {
   width: 64px;
   height: 64px;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  backdrop-filter: blur(25px) saturate(180%);
   border-radius: 50%;
   display: flex;
   align-items: center;
