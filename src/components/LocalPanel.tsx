@@ -1,7 +1,9 @@
 import { useRef, useState, Fragment, useEffect } from 'react';
 import PageHeader from './PageHeader';
 import { useMusicPlayer } from '../context/MusicPlayerContext';
-import { Play, Star, HardDrive, FolderSearch, FolderPlus, MoreVertical, ListPlus, Music as MusicIcon, Folder, ChevronRight, ChevronLeft, Trash2 } from 'lucide-react';
+import { Play, Star, HardDrive, FolderSearch, FolderPlus, MoreVertical, ListPlus, Music as MusicIcon, Folder, ChevronRight, ChevronLeft, Trash2, Edit3 } from 'lucide-react';
+import TagEditorModal from './TagEditorModal';
+import type { Track } from '../stores/types';
 
 export default function LocalPanel() {
   const { state, handleLocalFilesSelect, clearLocalTracks, removeLocalTrack, playFromList, toggleFavorite, addToQueue, addTrackToPlaylist } = useMusicPlayer();
@@ -9,6 +11,7 @@ export default function LocalPanel() {
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [activeMenuUid, setActiveMenuUid] = useState<string | null>(null);
   const [playlistSubMenuUid, setPlaylistSubMenuUid] = useState<string | null>(null);
+  const [editingTrack, setEditingTrack] = useState<Track | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -197,6 +200,18 @@ export default function LocalPanel() {
                             <span>Add to Playlist</span>
                             <ChevronRight size={14} style={{ marginLeft: 'auto', marginRight: '-4px', color: 'var(--text-secondary)' }} />
                           </button>
+                          <button
+                            className="ios-popover-item"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingTrack(track);
+                              setActiveMenuUid(null);
+                              setPlaylistSubMenuUid(null);
+                            }}
+                          >
+                            <Edit3 size={16} />
+                            <span>Tag Editor</span>
+                          </button>
                           <div style={{ borderBottom: '1px solid var(--border-subtle)', margin: '4px 0' }} />
                           <button
                             className="ios-popover-item"
@@ -221,6 +236,11 @@ export default function LocalPanel() {
           )}
         </div>
       </div>
+      <TagEditorModal
+        track={editingTrack}
+        isOpen={!!editingTrack}
+        onClose={() => setEditingTrack(null)}
+      />
     </Fragment>
   );
 }

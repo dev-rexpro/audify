@@ -13,7 +13,7 @@ export default function BottomNav() {
           data-target="view-home"
           onClick={() => setActiveTab('home')}
         >
-          <Home className="nav-icon mb-1" size={24} />
+          <Home className="nav-icon mb-1" size={26} />
           <span>Home</span>
         </button>
         <button
@@ -21,7 +21,7 @@ export default function BottomNav() {
           data-target="view-local"
           onClick={() => setActiveTab('local')}
         >
-          <HardDrive className="nav-icon mb-1" size={24} />
+          <HardDrive className="nav-icon mb-1" size={26} />
           <span>Devices</span>
         </button>
         <button
@@ -29,7 +29,7 @@ export default function BottomNav() {
           data-target="view-playlist"
           onClick={() => setActiveTab('playlist')}
         >
-          <Library className="nav-icon mb-1" size={24} />
+          <Library className="nav-icon mb-1" size={26} />
           <span>Library</span>
         </button>
       </div>
@@ -38,7 +38,7 @@ export default function BottomNav() {
         title="Search"
         onClick={() => toggleSearchTab()}
       >
-        <Search size={22} color={currentTab === 'search' ? 'var(--accent)' : '#000000'} />
+        <Search size={25} color={currentTab === 'search' ? 'var(--accent)' : '#000000'} />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { type Track, type Playlist, SYSTEM_DOWNLOADED_ID } from './types';
 import { v4 as uuidv4 } from 'uuid';
+import { updateLocalTrackInDB } from '../utils/db';
 
 const LIBRARY_STORAGE_KEY = 'music-player-library-v1';
 const OLD_LIBRARY_STORAGE_KEY = 'pikachu-music-library-v1';
@@ -98,6 +99,7 @@ export interface LibraryState {
   setLocalTracks: (tracks: Track[]) => void;
   removeLocalTrack: (uid: string) => void;
   clearLocalTracks: () => void;
+  updateTrackMetadata: (uid: string, changes: Partial<Track>) => void;
   createPlaylist: (name: string) => Playlist;
   deletePlaylist: (id: string) => void;
   renamePlaylist: (id: string, name: string) => void;
@@ -200,6 +202,35 @@ export const useLibraryStore = create<LibraryState>()(
         });
         return { localTracks: [] };
       }),
+
+      updateTrackMetadata: (uid, changes) => {
+        set(state => {
+          const updateItem = (t: Track) => t.uid === uid ? { ...t, ...changes } : t;
+          const newLocalTracks = state.localTracks.map(updateItem);
+          const newDownloads = state.downloads.map(updateItem);
+          const newFavorites = state.favorites.map(updateItem);
+          const newPlaylists = state.playlists.map(pl => ({
+            ...pl,
+            tracks: (pl.tracks || []).map(updateItem)
+          }));
+          const newTrackMap = new Map(state.trackMap);
+          const existingMap = newTrackMap.get(uid);
+          if (existingMap) {
+            newTrackMap.set(uid, { ...existingMap, ...changes });
+          }
+
+          saveLibraryToStorage({ ...state, favorites: newFavorites, downloads: newDownloads, playlists: newPlaylists });
+          updateLocalTrackInDB(uid, changes).catch(() => {});
+
+          return {
+            localTracks: newLocalTracks,
+            downloads: newDownloads,
+            favorites: newFavorites,
+            playlists: newPlaylists,
+            trackMap: newTrackMap
+          };
+        });
+      },
 
       createPlaylist: (name) => {
         const id = 'pl-' + Date.now() + '-' + uuidv4().slice(0, 8);

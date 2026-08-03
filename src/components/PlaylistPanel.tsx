@@ -3,8 +3,9 @@ import PageHeader from './PageHeader';
 import { useMusicPlayer } from '../context/MusicPlayerContext';
 import type { Track } from '../stores/types';
 import { SYSTEM_DOWNLOADED_ID } from '../stores/types';
-import { Play, Star, Trash2, Plus, ListMusic, ArrowDownToLine, Folder, ChevronRight, Repeat, Repeat1, Shuffle, ChevronDown, ListPlus, ChevronLeft, Download, Music as MusicIcon, MoreVertical, Copy, X, FolderPlus, Clock } from 'lucide-react';
+import { Play, Star, Trash2, Plus, ListMusic, ArrowDownToLine, Folder, ChevronRight, Repeat, Repeat1, Shuffle, ChevronDown, ListPlus, ChevronLeft, Download, Music as MusicIcon, MoreVertical, Copy, X, FolderPlus, Clock, Edit3 } from 'lucide-react';
 import { usePlayerStore } from '../stores/playerStore';
+import TagEditorModal from './TagEditorModal';
 
 export default function PlaylistPanel() {
   const {
@@ -38,6 +39,7 @@ export default function PlaylistPanel() {
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [renameId, setRenameId] = useState('');
   const [renameValue, setRenameValue] = useState('');
+  const [editingTrack, setEditingTrack] = useState<Track | null>(null);
   const [sortBy, setSortBy] = useState<'title' | 'artist' | 'dateAdded'>('dateAdded');
 
   const currentView = state.activeLibraryView || 'root';
@@ -401,6 +403,20 @@ export default function PlaylistPanel() {
                                 <Download size={16} />
                                 <span>Download</span>
                               </button>
+                              {(currentView === 'downloaded' || track.source === 'local') && (
+                                <button
+                                  className="ios-popover-item"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingTrack(track);
+                                    setActiveMenuUid(null);
+                                    setPlaylistSubMenuUid(null);
+                                  }}
+                                >
+                                  <Edit3 size={16} />
+                                  <span>Tag Editor</span>
+                                </button>
+                              )}
                               {(currentView === 'downloaded' || currentView === 'playlists') && (
                                 <button
                                   className="ios-popover-item danger"
@@ -448,6 +464,11 @@ export default function PlaylistPanel() {
           </div>
         </div>
       )}
+      <TagEditorModal
+        track={editingTrack}
+        isOpen={!!editingTrack}
+        onClose={() => setEditingTrack(null)}
+      />
     </Fragment>
   );
 }

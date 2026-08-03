@@ -99,6 +99,23 @@ export async function saveLocalTrackToDB(track: Partial<Track> & { uid: string }
   }
 }
 
+export async function updateLocalTrackInDB(uid: string, updates: Partial<Track>) {
+  try {
+    const existing = await db.localTracks.get(uid);
+    if (existing) {
+      await db.localTracks.update(uid, {
+        title: updates.title !== undefined ? updates.title : existing.title,
+        artist: updates.artist !== undefined ? updates.artist : existing.artist,
+        album: updates.album !== undefined ? updates.album : existing.album,
+        cover: updates.cover !== undefined ? updates.cover : existing.cover,
+        lrc: updates.lrc !== undefined ? updates.lrc : existing.lrc
+      });
+    }
+  } catch (e) {
+    console.error('Failed to update local track in DB:', e);
+  }
+}
+
 export async function getAllLocalTracksFromDB(): Promise<SavedLocalTrack[]> {
   try {
     return await db.localTracks.toArray();

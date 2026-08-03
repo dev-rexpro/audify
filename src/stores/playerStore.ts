@@ -184,7 +184,22 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
     const searchState = useSearchStore.getState();
     const updated = searchState.trackMap.get(finalTrack.uid) || finalTrack;
-    const lines = updated.lrc ? parseLRC(updated.lrc) : [];
+    let lrcText = updated.lrc;
+
+    if (!lrcText && finalTrack.title) {
+      try {
+        const { fetchOnlineLyrics } = await import('../utils/lyricResolver');
+        lrcText = await fetchOnlineLyrics(finalTrack.title, finalTrack.artist);
+        if (lrcText) {
+          updated.lrc = lrcText;
+          set(state => ({
+            currentTrack: state.currentTrack?.uid === finalTrack.uid ? { ...state.currentTrack, lrc: lrcText } : state.currentTrack
+          }));
+        }
+      } catch (e) {}
+    }
+
+    const lines = lrcText ? parseLRC(lrcText) : [];
     set({ lyricLines: lines, currentLyricIndex: -1 });
     return { src: playSrc };
   },
