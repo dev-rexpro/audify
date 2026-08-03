@@ -36,12 +36,11 @@ export function useAudioPlayer() {
     if (!audio || audioContextRef.current) return;
 
     try {
-      const src = audio.src;
-      if (!src || src.startsWith('blob:')) {
-        const ctx = new (window.AudioContext || (window as unknown as Record<string, unknown>).webkitAudioContext as typeof AudioContext)();
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.8;
+      audio.crossOrigin = 'anonymous';
+      const ctx = new (window.AudioContext || (window as unknown as Record<string, unknown>).webkitAudioContext as typeof AudioContext)();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
 
         const source = ctx.createMediaElementSource(audio);
         
@@ -88,14 +87,23 @@ export function useAudioPlayer() {
         
         dryGain.connect(analyser);
         wetGain.connect(analyser);
-        analyser.connect(ctx.destination);
+
+        // Anti-clipping dynamics compressor to prevent sound distortion
+        const compressor = ctx.createDynamicsCompressor();
+        compressor.threshold.value = -12;
+        compressor.knee.value = 12;
+        compressor.ratio.value = 12;
+        compressor.attack.value = 0.003;
+        compressor.release.value = 0.25;
+
+        analyser.connect(compressor);
+        compressor.connect(ctx.destination);
 
         audioContextRef.current = ctx;
         analyserRef.current = analyser;
         sourceRef.current = source;
         eqNodesRef.current = eqNodes;
         spatialWetGainRef.current = wetGain;
-      }
     } catch (e) {
       console.error('Web Audio API setup failed:', e);
     }
@@ -183,10 +191,14 @@ export function useAudioPlayer() {
 
   // Update EQ Node gains when store changes
   useEffect(() => {
+    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume().catch(() => {});
+    }
     if (eqNodesRef.current.length === eqBands.length) {
       eqBands.forEach((gain, i) => {
         if (eqNodesRef.current[i]) {
-          eqNodesRef.current[i].gain.setTargetAtTime(gain, audioContextRef.current?.currentTime || 0, 0.1);
+          // 1.0 multiplier + compressor guarantees clean, distortion-free audio
+          eqNodesRef.current[i].gain.setValueAtTime(gain * 1.0, audioContextRef.current?.currentTime || 0);
         }
       });
     }
@@ -194,8 +206,11 @@ export function useAudioPlayer() {
 
   // Update Spatial Audio
   useEffect(() => {
+    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume().catch(() => {});
+    }
     if (spatialWetGainRef.current) {
-      spatialWetGainRef.current.gain.setTargetAtTime(spatialAudio ? 1.0 : 0, audioContextRef.current?.currentTime || 0, 0.1);
+      spatialWetGainRef.current.gain.setValueAtTime(spatialAudio ? 1.0 : 0, audioContextRef.current?.currentTime || 0);
     }
   }, [spatialAudio]);
 

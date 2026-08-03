@@ -1,10 +1,10 @@
 import { useRef, useState, Fragment, useEffect } from 'react';
 import PageHeader from './PageHeader';
 import { useMusicPlayer } from '../context/MusicPlayerContext';
-import { Play, Star, HardDrive, FolderSearch, FolderPlus, MoreVertical, ListPlus, Music as MusicIcon, Folder, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Play, Star, HardDrive, FolderSearch, FolderPlus, MoreVertical, ListPlus, Music as MusicIcon, Folder, ChevronRight, ChevronLeft, Trash2 } from 'lucide-react';
 
 export default function LocalPanel() {
-  const { state, handleLocalFilesSelect, clearLocalTracks, playFromList, toggleFavorite, addToQueue, addTrackToPlaylist } = useMusicPlayer();
+  const { state, handleLocalFilesSelect, clearLocalTracks, removeLocalTrack, playFromList, toggleFavorite, addToQueue, addTrackToPlaylist } = useMusicPlayer();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [activeMenuUid, setActiveMenuUid] = useState<string | null>(null);
@@ -85,15 +85,16 @@ export default function LocalPanel() {
             Drop audio files here
           </div>
         )}
-        <div style={{ display: 'flex', gap: '10px', margin: '4px 0 10px' }}>
-          <button className="btn" onClick={handleFolderScanClick} style={{ borderRadius: '20px', padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '12px', margin: '8px 0 12px', width: '100%' }}>
+          <button className="btn" onClick={handleFolderScanClick} style={{ flex: 1, borderRadius: '20px', padding: '12px 16px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', fontWeight: 600 }}>
             <FolderSearch size={18} />
             <span>Scan Folder</span>
           </button>
-          <button className="btn btn-secondary" onClick={() => fileInputRef.current?.click()} style={{ borderRadius: '20px', padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <button className="btn btn-secondary" onClick={() => fileInputRef.current?.click()} style={{ flex: 1, borderRadius: '20px', padding: '12px 16px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', fontWeight: 600 }}>
             <FolderPlus size={18} />
             <span>Choose Files</span>
           </button>
+        </div>
 
           <input
             ref={folderInputRef}
@@ -113,7 +114,6 @@ export default function LocalPanel() {
             style={{ display: 'none' }}
             onChange={handleLocalFilesSelect}
           />
-        </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
           <span id="local-tracks-count" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 600 }}>{state.localTracks.length} Local Track{state.localTracks.length === 1 ? '' : 's'}</span>
@@ -196,6 +196,20 @@ export default function LocalPanel() {
                             <FolderPlus size={16} />
                             <span>Add to Playlist</span>
                             <ChevronRight size={14} style={{ marginLeft: 'auto', marginRight: '-4px', color: 'var(--text-secondary)' }} />
+                          </button>
+                          <div style={{ borderBottom: '1px solid var(--border-subtle)', margin: '4px 0' }} />
+                          <button
+                            className="ios-popover-item"
+                            style={{ color: 'var(--accent)' }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeLocalTrack(track.uid);
+                              setActiveMenuUid(null);
+                              setPlaylistSubMenuUid(null);
+                            }}
+                          >
+                            <Trash2 size={16} color="var(--accent)" />
+                            <span>Remove Track</span>
                           </button>
                         </>
                       )}

@@ -177,6 +177,7 @@ export interface ContextValue {
   removeTrackFromCurrentPlaylist: (trackUid: string) => void;
   handleLocalFilesSelect: (e: File[] | React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   clearLocalTracks: () => void;
+  removeLocalTrack: (uid: string) => void;
   switchLibraryTab: (tabName: string) => void;
   openPlaylistDetail: (plId: string) => void;
   handleBackNavigation: () => void;
@@ -551,6 +552,11 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
       clearLocalTracks: () => {
         clearAllLocalTracksFromDB().catch(() => {});
         library.clearLocalTracks();
+        ui.showToast('Local tracks cleared');
+      },
+      removeLocalTrack: (uid: string) => {
+        library.removeLocalTrack(uid);
+        ui.showToast('Local track removed');
       },
       switchLibraryTab: ui.switchLibraryTab,
       openPlaylistDetail: ui.openPlaylistDetail,

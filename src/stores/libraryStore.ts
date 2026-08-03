@@ -96,6 +96,7 @@ export interface LibraryState {
   isDownloaded: (uid: string) => boolean;
   addLocalTracks: (tracks: Track[]) => void;
   setLocalTracks: (tracks: Track[]) => void;
+  removeLocalTrack: (uid: string) => void;
   clearLocalTracks: () => void;
   createPlaylist: (name: string) => Playlist;
   deletePlaylist: (id: string) => void;
@@ -180,6 +181,17 @@ export const useLibraryStore = create<LibraryState>()(
         const newTrackMap = new Map(state.trackMap);
         tracks.forEach(t => newTrackMap.set(t.uid, t));
         return { localTracks: tracks, trackMap: newTrackMap };
+      }),
+
+      removeLocalTrack: (uid) => set(state => {
+        const target = state.localTracks.find(t => t.uid === uid);
+        if (target && target.audioUrl && target.audioUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(target.audioUrl);
+        }
+        const newLocalTracks = state.localTracks.filter(t => t.uid !== uid);
+        const newTrackMap = new Map(state.trackMap);
+        newTrackMap.delete(uid);
+        return { localTracks: newLocalTracks, trackMap: newTrackMap };
       }),
 
       clearLocalTracks: () => set(state => {

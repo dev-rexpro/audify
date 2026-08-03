@@ -1984,7 +1984,7 @@ header {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  padding: 12px 20px 120px 20px;
+  padding: 12px 20px 130px 20px;
   overflow-y: auto;
 }
 
@@ -1993,7 +1993,7 @@ header {
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  padding-bottom: 20px;
+  padding-bottom: 0;
 }
 
 .apple-home-header {
@@ -2082,13 +2082,13 @@ header {
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .top-pick-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .replay-card {

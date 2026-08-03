@@ -34,6 +34,10 @@ export interface PlayerState {
   volume: number;
   duration: number;
   currentTime: number;
+  recentlyPlayed: Track[];
+  recommendedTracks: Track[];
+  addToRecentlyPlayed: (track: Track) => void;
+  fetchRecommendations: () => Promise<void>;
   playTrack: (track: Track, context?: PlayContext) => Promise<{ src: string | null }>;
   playFromList: (type: PlayContext['type'], index: number, plId?: string | null, list?: Track[]) => void;
   playNext: (direction: 'next' | 'prev') => void;
@@ -110,8 +114,42 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   spatialAudio: false,
   duration: 0,
   currentTime: 0,
+  recommendedTracks: [],
+  recentlyPlayed: (() => {
+    try {
+      const saved = localStorage.getItem('audify_recently_played_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  })(),
 
-  setCurrentTrack: (track) => set({ currentTrack: track }),
+  addToRecentlyPlayed: (track) => set(state => {
+    if (!track) return state;
+    const filtered = state.recentlyPlayed.filter(t => t.uid !== track.uid);
+    const updated = [track, ...filtered].slice(0, 30);
+    try {
+      // Exclude audioBlob to avoid circular JSON stringify error if any
+      const toSave = updated.map(t => {
+        const { audioBlob, ...rest } = t as any;
+        return rest;
+      });
+      localStorage.setItem('audify_recently_played_v1', JSON.stringify(toSave));
+    } catch (e) {}
+    return { recentlyPlayed: updated };
+  }),
+
+  fetchRecommendations: async () => {
+    const { fetchSmartRecommendations } = await import('../utils/recommendationEngine');
+    const libState = useLibraryStore.getState();
+    const recs = await fetchSmartRecommendations(get().recentlyPlayed, libState.favorites);
+    set({ recommendedTracks: recs });
+  },
+
+  setCurrentTrack: (track) => {
+    if (track) get().addToRecentlyPlayed(track);
+    set({ currentTrack: track });
+  },
   setPlayContext: (ctx) => set({ playContext: ctx }),
   setIsPlaying: (v) => set({ isPlaying: v }),
   setLyricLines: (lines) => set({ lyricLines: lines, currentLyricIndex: -1 }),
@@ -134,7 +172,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
 
     const ctx = context || get().playContext;
-    set({ currentTrack: finalTrack, playContext: ctx });
+    get().addToRecentlyPlayed(finalTrack);
+    set({ currentTrack: finalTrack, playContext: ctx, isPlaying: true });
 
     let playSrc = finalTrack.audioUrl;
     if (finalTrack.source !== 'local') {
@@ -194,6 +233,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         idx = newIdx;
       }
     } else {
+      const isAtEnd = direction === 'next' && idx === list.length - 1;
+      if (isAtEnd && get().recommendedTracks.length > 0) {
+        // Smart Autoplay: Play next recommended track seamlessly
+        const nextRec = get().recommendedTracks[0];
+        set(state => ({ recommendedTracks: state.recommendedTracks.slice(1) }));
+        get().playTrack(nextRec);
+        return;
+      }
       idx = (idx + (direction === 'prev' ? -1 : 1) + list.length) % list.length;
     }
 

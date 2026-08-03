@@ -42,10 +42,10 @@ export default function FullPlayer() {
   const dragIndexRef = useRef<number | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [isDraggingProgress, setIsDraggingProgress] = useState(false);
+  const isDraggingProgressRef = useRef(false);
+  const dragSeekTimeRef = useRef<number | null>(null);
   const fullPlayerRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
-
-  const dragSeekTimeRef = useRef<number | null>(null);
 
   const handleToggleLyrics = () => {
     setIsLyricsActive(!isLyricsActive);
@@ -145,7 +145,7 @@ export default function FullPlayer() {
     if (!wrapper) return;
     const rect = wrapper.getBoundingClientRect();
     const r = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    const dur = duration || 0;
+    const dur = usePlayerStore.getState().duration || 0;
     const seekTime = r * dur;
     dragSeekTimeRef.current = seekTime;
 
@@ -160,31 +160,36 @@ export default function FullPlayer() {
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.setPointerCapture(e.pointerId);
+    isDraggingProgressRef.current = true;
     setIsDraggingProgress(true);
     updateProgressUI(e.clientX);
-  };
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDraggingProgress) return;
-    updateProgressUI(e.clientX);
-  };
+    const onPointerMove = (moveEv: PointerEvent) => {
+      if (!isDraggingProgressRef.current) return;
+      updateProgressUI(moveEv.clientX);
+    };
 
-  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDraggingProgress) return;
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-    setIsDraggingProgress(false);
-    if (dragSeekTimeRef.current !== null) {
-      const audio = document.getElementById('audio') as HTMLAudioElement;
-      if (audio) {
-        audio.currentTime = dragSeekTimeRef.current;
+    const onPointerUp = () => {
+      if (!isDraggingProgressRef.current) return;
+      isDraggingProgressRef.current = false;
+      setIsDraggingProgress(false);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+
+      if (dragSeekTimeRef.current !== null) {
+        const audio = document.getElementById('audio') as HTMLAudioElement;
+        if (audio) {
+          audio.currentTime = dragSeekTimeRef.current;
+        }
+        usePlayerStore.getState().setCurrentTime(dragSeekTimeRef.current);
+        dragSeekTimeRef.current = null;
       }
-      usePlayerStore.getState().setCurrentTime(dragSeekTimeRef.current);
-      dragSeekTimeRef.current = null;
-    }
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -401,9 +406,6 @@ export default function FullPlayer() {
               id="progress-bar-wrapper"
               className={`progress-bar-wrapper ${isDraggingProgress ? 'dragging' : ''}`}
               onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
             >
               <div className="progress-bar" id="progress-bar"></div>
               <div className="progress-handle" id="progress-handle"></div>

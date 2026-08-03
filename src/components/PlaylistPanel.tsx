@@ -3,7 +3,8 @@ import PageHeader from './PageHeader';
 import { useMusicPlayer } from '../context/MusicPlayerContext';
 import type { Track } from '../stores/types';
 import { SYSTEM_DOWNLOADED_ID } from '../stores/types';
-import { Play, Star, Trash2, Plus, ListMusic, ArrowDownToLine, Folder, ChevronRight, Repeat, Repeat1, Shuffle, ChevronDown, ListPlus, ChevronLeft, Download, Music as MusicIcon, MoreVertical, Copy, X, FolderPlus } from 'lucide-react';
+import { Play, Star, Trash2, Plus, ListMusic, ArrowDownToLine, Folder, ChevronRight, Repeat, Repeat1, Shuffle, ChevronDown, ListPlus, ChevronLeft, Download, Music as MusicIcon, MoreVertical, Copy, X, FolderPlus, Clock } from 'lucide-react';
+import { usePlayerStore } from '../stores/playerStore';
 
 export default function PlaylistPanel() {
   const {
@@ -28,6 +29,8 @@ export default function PlaylistPanel() {
     openPlaylistModal,
     addTrackToPlaylist
   } = useMusicPlayer();
+
+  const recentlyPlayedTracks = usePlayerStore(s => s.recentlyPlayed);
 
   const [showNewPopover, setShowNewPopover] = useState(false);
   const [activeMenuUid, setActiveMenuUid] = useState<string | null>(null);
@@ -126,6 +129,7 @@ export default function PlaylistPanel() {
   };
 
   const getPlaylistTracks = () => {
+    if (currentView === 'recentlyPlayed') return recentlyPlayedTracks;
     if (currentView === 'results') return getInterleaved();
     if (currentView === 'favorites') return state.favorites;
     if (currentView === 'downloaded') {
@@ -142,6 +146,7 @@ export default function PlaylistPanel() {
   const tracks = getPlaylistTracks();
 
   const getPlaylistInfoText = () => {
+    if (currentView === 'recentlyPlayed') return 'Recently Played';
     if (currentView === 'results') return 'Search Results';
     if (currentView === 'favorites') return 'Favorite Songs';
     if (currentView === 'downloaded') return 'Downloaded';
@@ -171,8 +176,15 @@ export default function PlaylistPanel() {
             </div>
             <div className="apple-category-item" onClick={() => switchLibraryTab('favorites')}>
               <div className="apple-category-left">
-                <Star size={22} color="var(--accent)" fill="var(--accent)" />
+                <Star size={22} color="var(--accent)" />
                 <span>Favorite Songs</span>
+              </div>
+              <div className="apple-category-right"><ChevronRight size={18} /></div>
+            </div>
+            <div className="apple-category-item" onClick={() => switchLibraryTab('recentlyPlayed')}>
+              <div className="apple-category-left">
+                <Clock size={22} color="var(--accent)" />
+                <span>Recently Played</span>
               </div>
               <div className="apple-category-right"><ChevronRight size={18} /></div>
             </div>
