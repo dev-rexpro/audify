@@ -236,6 +236,20 @@ export default function FullPlayer() {
 
   return (
     <div ref={fullPlayerRef} id="fullPlayer" className="full-player">
+      <div className="full-player-backdrop">
+        {state.currentTrack?.cover ? (
+          <img src={state.currentTrack.cover} alt="" className="full-player-ambient-img" />
+        ) : null}
+        <div className="full-player-backdrop-overlay" />
+      </div>
+
+      <div className="full-player-hero">
+        {state.currentTrack?.cover ? (
+          <img src={state.currentTrack.cover} alt="" className="full-player-hero-img" />
+        ) : null}
+        <div className="full-player-hero-mask" />
+      </div>
+
       <div className="player-top-header" onClick={() => fullPlayerRef.current?.classList.remove('active')}>
         <div className="player-grabber-pill"></div>
       </div>
