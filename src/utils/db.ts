@@ -82,14 +82,14 @@ export async function getAllOfflineTracks(): Promise<OfflineTrack[]> {
   }
 }
 
-export async function saveLocalTrackToDB(track: Track, audioBlob: Blob) {
+export async function saveLocalTrackToDB(track: Partial<Track> & { uid: string }, audioBlob: Blob) {
   try {
     await db.localTracks.put({
       uid: track.uid,
-      title: track.title,
-      artist: track.artist,
-      album: track.album,
-      cover: track.cover,
+      title: track.title || 'Unknown Title',
+      artist: track.artist || 'Unknown Artist',
+      album: track.album || '',
+      cover: track.cover || null,
       audioBlob,
       lrc: track.lrc || null,
       savedAt: new Date().toISOString()

@@ -109,7 +109,7 @@ export interface LibraryState {
   getPlaylistById: (id: string) => Playlist | undefined;
 }
 
-function ensureSystemPlaylists(state: LibraryState): Playlist[] {
+function ensureSystemPlaylists(state: { playlists: Playlist[]; downloads: Track[] }): Playlist[] {
   const playlists = [...state.playlists];
   if (!playlists.find(p => p.id === SYSTEM_DOWNLOADED_ID)) {
     playlists.unshift({ id: SYSTEM_DOWNLOADED_ID, name: 'Downloaded Songs', isSystem: true, tracks: state.downloads });
@@ -126,7 +126,7 @@ export const useLibraryStore = create<LibraryState>()(
       favorites: initial.favorites || [],
       downloads: initial.downloads || [],
       localTracks: [],
-      playlists: ensureSystemPlaylists({ favorites: initial.favorites || [], downloads: initial.downloads || [], localTracks: [], playlists: initial.playlists || [], trackMap: new Map(), addToFavorites: () => {}, removeFromFavorites: () => {}, toggleFavorite: () => {}, isFavorite: () => false, addDownload: () => {}, removeDownload: () => {}, isDownloaded: () => false, addLocalTracks: () => {}, clearLocalTracks: () => {}, createPlaylist: () => ({ id: '', name: '', isSystem: false, tracks: [] }), deletePlaylist: () => {}, renamePlaylist: () => {}, duplicatePlaylist: () => {}, addTrackToPlaylist: () => false, removeTrackFromPlaylist: () => {}, reorderPlaylistTracks: () => {}, setTrackMap: () => {}, getPlaylistById: () => undefined }),
+      playlists: ensureSystemPlaylists({ playlists: initial.playlists || [], downloads: initial.downloads || [] }),
       trackMap: new Map<string, Track>(),
 
       setTrackMap: (map) => set({ trackMap: map }),
