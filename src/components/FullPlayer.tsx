@@ -5,6 +5,7 @@ import { Star, MoreHorizontal, Quote, ListMusic, Music as MusicIcon, Shuffle, Re
 import AudioTunerModal from './AudioTunerModal';
 import Visualizer from './Visualizer';
 import atmosLogo from '../assets/atmos.svg';
+import atmosIcon from '../assets/atmos-icon.svg';
 
 export default function FullPlayer() {
   const {
@@ -461,8 +462,8 @@ export default function FullPlayer() {
             <button className={`bottom-action-icon-btn ${isLyricsActive ? 'active' : ''}`} id="lyrics-toggle-btn" onClick={handleToggleLyrics} title="Lyrics" aria-label="Lyrics">
               <Quote size={22} strokeWidth={1.8} />
             </button>
-            <button className="bottom-action-icon-btn" title="AirPlay / Audio Output" aria-label="AirPlay / Audio Output">
-              <Airplay size={22} strokeWidth={1.8} />
+            <button className={`bottom-action-icon-btn ${isTunerOpen ? 'active' : ''}`} title="Audio Tuner / Dolby Atmos" aria-label="Audio Tuner" onClick={() => setIsTunerOpen(true)}>
+              <img src={atmosIcon} alt="Atmos" style={{ height: '20px', filter: 'brightness(0) invert(1)', opacity: 0.8 }} />
             </button>
             <button className={`bottom-action-icon-btn ${isQueueActive ? 'queue-active active' : ''}`} id="queue-toggle-btn" onClick={handleToggleQueue} title="Queue / Up Next" aria-label="Queue / Up Next">
               <ListMusic size={22} strokeWidth={1.8} />
